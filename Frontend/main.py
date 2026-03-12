@@ -34,7 +34,7 @@ html, body, [class*="css"] {
 }
 
 /* Hide default streamlit header */
-#MainMenu, footer, header { visibility: hidden; }
+#MainMenu, footer{ visibility: hidden; }
 
 /* Metric cards */
 [data-testid="metric-container"] {

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
 
 
@@ -11,20 +11,18 @@ class RecommendRequest(BaseModel):
     user_id: str = Field(..., example="U050", description="Existing user ID")
     top_k: Optional[int] = Field(default=5, ge=1, le=20, description="Number of recommendations to return")
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "user_id": "U050",
-                "top_k": 5
-            }
+    model_config = {
+        "json_schema_extra": {
+            "example": {"user_id": "U050", "top_k": 5}
         }
+    }
 
 
 class NewUserRecommendRequest(BaseModel):
     """
     For brand new users not in the system.
-    They provide the list of topic_ids they have already completed
-    and optionally a display name.
+    They provide the list of topic_ids they have already completed.
+    The system detects their level and recommends the appropriate next topics.
     """
     user_id: Optional[str] = Field(
         default="new_user",
@@ -38,7 +36,8 @@ class NewUserRecommendRequest(BaseModel):
     )
     top_k: Optional[int] = Field(default=5, ge=1, le=20, description="Number of recommendations to return")
 
-    @validator("completed_topic_ids")
+    @field_validator("completed_topic_ids")
+    @classmethod
     def must_not_be_empty(cls, v):
         if len(v) == 0:
             raise ValueError(
@@ -47,14 +46,15 @@ class NewUserRecommendRequest(BaseModel):
             )
         return v
 
-    class Config:
-        json_schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "user_id": "new_user_john",
                 "completed_topic_ids": ["T001", "T002", "T003"],
                 "top_k": 5
             }
         }
+    }
 
 
 # -----------------------------------------
@@ -62,18 +62,18 @@ class NewUserRecommendRequest(BaseModel):
 # -----------------------------------------
 
 class TopicRecommendation(BaseModel):
-    topic_id: str = Field(..., example="T021")
-    topic_name: str = Field(..., example="OOP Concepts")
-    difficulty: str = Field(..., example="Intermediate")
+    topic_id: str          = Field(..., example="T021")
+    topic_name: str        = Field(..., example="OOP Concepts")
+    difficulty: str        = Field(..., example="Intermediate")
     estimated_hours: Optional[str] = Field(None, example="8")
     score: Optional[float] = Field(None, example=0.204)
 
 
 class RecommendResponse(BaseModel):
-    user_id: str = Field(..., example="U050")
-    total: int = Field(..., example=5)
+    user_id: str      = Field(..., example="U050")
+    total: int        = Field(..., example=5)
     is_cold_start: bool = Field(..., description="True if user had no history")
-    is_new_user: bool = Field(default=False, description="True if this was a new user recommendation")
+    is_new_user: bool   = Field(default=False, description="True if this was a new user recommendation")
     recommendations: List[TopicRecommendation]
 
 
@@ -84,5 +84,5 @@ class CompletedTopicsResponse(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    status: str = "ok"
+    status: str  = "ok"
     message: str = "Learning Path Recommender API is running"
