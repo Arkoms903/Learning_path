@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 from datetime import datetime
 
-API_BASE = "http://192.168.29.22:8000"
+API_BASE = "https://learning-path-4.onrender.com"
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
